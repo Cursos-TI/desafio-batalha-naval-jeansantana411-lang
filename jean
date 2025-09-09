@@ -1,0 +1,100 @@
+import random
+
+# Tamanho do tabuleiro
+TAMANHO = 5
+NAVIO_TAMANHO = 3
+
+def criar_tabuleiro():
+    return [["~"] * TAMANHO for _ in range(TAMANHO)]
+
+def imprimir_tabuleiro(tabuleiro, mostrar_navios=False):
+    print("  " + " ".join(str(i) for i in range(TAMANHO)))
+    for i, linha in enumerate(tabuleiro):
+        linha_visivel = []
+        for celula in linha:
+            if celula == "N" and not mostrar_navios:
+                linha_visivel.append("~")
+            else:
+                linha_visivel.append(celula)
+        print(str(i) + " " + " ".join(linha_visivel))
+
+def posicionar_navio(tabuleiro):
+    orientacao = random.choice(["H", "V"])
+    if orientacao == "H":
+        linha = random.randint(0, TAMANHO - 1)
+        coluna = random.randint(0, TAMANHO - NAVIO_TAMANHO)
+        for i in range(NAVIO_TAMANHO):
+            tabuleiro[linha][coluna + i] = "N"
+    else:
+        linha = random.randint(0, TAMANHO - NAVIO_TAMANHO)
+        coluna = random.randint(0, TAMANHO - 1)
+        for i in range(NAVIO_TAMANHO):
+            tabuleiro[linha + i][coluna] = "N"
+
+def atacar(tabuleiro, linha, coluna):
+    if tabuleiro[linha][coluna] == "N":
+        tabuleiro[linha][coluna] = "X"
+        print("💥 Acertou!")
+        return True
+    elif tabuleiro[linha][coluna] == "~":
+        tabuleiro[linha][coluna] = "O"
+        print("🌊 Errou!")
+        return False
+    else:
+        print("⚠️ Já atacou essa posição.")
+        return False
+
+def navios_restantes(tabuleiro):
+    for linha in tabuleiro:
+        if "N" in linha:
+            return True
+    return False
+
+# --- Jogo começa aqui ---
+
+jogador_tabuleiro = criar_tabuleiro()
+computador_tabuleiro = criar_tabuleiro()
+
+# Posicionar navios
+posicionar_navio(jogador_tabuleiro)
+posicionar_navio(computador_tabuleiro)
+
+print("🛳️ BATALHA NAVAL - SISTEMAS DE INFORMAÇÃO")
+print("Seu tabuleiro:")
+imprimir_tabuleiro(jogador_tabuleiro, mostrar_navios=True)
+
+while True:
+    # Turno do jogador
+    print("\nSeu turno:")
+    imprimir_tabuleiro(computador_tabuleiro)
+    try:
+        linha = int(input("Linha (0 a 4): "))
+        coluna = int(input("Coluna (0 a 4): "))
+    except ValueError:
+        print("Digite números válidos.")
+        continue
+
+    if 0 <= linha < TAMANHO and 0 <= coluna < TAMANHO:
+        atacar(computador_tabuleiro, linha, coluna)
+    else:
+        print("Coordenadas fora do tabuleiro.")
+        continue
+
+    if not navios_restantes(computador_tabuleiro):
+        print("\n🎉 Você venceu! Todos os navios inimigos foram destruídos.")
+        break
+
+    # Turno do computador
+    print("\nTurno do computador:")
+    while True:
+        linha_cpu = random.randint(0, TAMANHO - 1)
+        coluna_cpu = random.randint(0, TAMANHO - 1)
+        if jogador_tabuleiro[linha_cpu][coluna_cpu] in ["~", "N"]:
+            break
+    atacar(jogador_tabuleiro, linha_cpu, coluna_cpu)
+    print("Tabuleiro do jogador:")
+    imprimir_tabuleiro(jogador_tabuleiro, mostrar_navios=True)
+
+    if not navios_restantes(jogador_tabuleiro):
+        print("\n💀 Você perdeu! Seus navios foram destruídos.")
+        break
